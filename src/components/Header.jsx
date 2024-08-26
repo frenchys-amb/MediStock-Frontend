@@ -4,7 +4,7 @@ function Header() {
   const location = useLocation();
 
   return (
-    <nav className="bg-sky-900 text-white p-4 h-screen flex flex-col justify-between">
+    <nav className="bg-sky-900 text-white p-4 min-h-screen flex flex-col justify-between">
       <div>
         <h1 className="text-2xl font-bold text-white mb-4">MediStock</h1>
         <ul className="space-y-4">
