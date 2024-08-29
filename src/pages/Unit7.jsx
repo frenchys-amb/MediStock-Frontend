@@ -271,7 +271,7 @@ function Unit7() {
           <div className="flex justify-end">
             <button
               type="button"
-              className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md mr-4"
+              className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 mr-4"
               onClick={() => setShowAddModal(false)}
             >
               Cancel
@@ -280,13 +280,13 @@ function Unit7() {
               type="submit"
               className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
             >
-              Add
+              Add Unit
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Modal for Editing Unit */}
+      {/* Modal for Editing Existing Unit */}
       <Modal
         isOpen={showEditModal}
         onRequestClose={() => setShowEditModal(false)}
@@ -306,7 +306,7 @@ function Unit7() {
             <select
               value={editDrug}
               onChange={(e) => setEditDrug(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             >
               <option value="">Select a Drug</option>
@@ -323,23 +323,23 @@ function Unit7() {
               type="number"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
           </div>
           <div className="flex justify-end">
             <button
               type="button"
-              className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md mr-4"
+              className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 mr-4"
               onClick={() => setShowEditModal(false)}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
+              className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
             >
-              Save
+              Save Changes
             </button>
           </div>
         </form>
