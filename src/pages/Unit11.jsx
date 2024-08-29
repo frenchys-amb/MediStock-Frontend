@@ -8,7 +8,6 @@ Modal.setAppElement('#root');
 
 function Unit11() {
   const [units, setUnits] = useState([]);
-  const [filteredUnits, setFilteredUnits] = useState([]);
   const [drugs, setDrugs] = useState([]);
   const [selectedDrug, setSelectedDrug] = useState('');
   const [amount, setAmount] = useState('');
@@ -17,18 +16,18 @@ function Unit11() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentUnitId, setCurrentUnitId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(''); // Added state for search term
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    getUnits();
-    getDrugs();
-  }, []);
-
-  useEffect(() => {
-    handleSearch(); // Filter units whenever the search term changes
+    if (searchTerm) {
+      handleSearch();
+    } else {
+      getLatestUnits();
+    }
   }, [searchTerm]);
 
-  const getUnits = async () => {
+  const getLatestUnits = async () => {
     try {
       const { data, error } = await supabase
         .from('unit11')
@@ -41,9 +40,26 @@ function Unit11() {
       }
 
       setUnits(data);
-      setFilteredUnits(data);
     } catch (error) {
       console.error('Failed to fetch units:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('unit11')
+        .select('*')
+        .ilike('name', `%${searchTerm}%`);
+
+      if (error) {
+        throw error;
+      }
+
+      setUnits(data);
+      setIsSearching(true);
+    } catch (error) {
+      console.error('Failed to search units:', error);
     }
   };
 
@@ -74,8 +90,11 @@ function Unit11() {
         throw error;
       }
 
-      setUnits([data[0], ...units]);
-      setFilteredUnits([data[0], ...filteredUnits]);
+      if (!isSearching) {
+        setUnits([data[0], ...units.slice(0, 4)]); // Keep only the latest 5 units
+      } else {
+        setUnits([data[0], ...units]);
+      }
       setShowAddModal(false);
       setSelectedDrug('');
       setAmount('');
@@ -100,7 +119,6 @@ function Unit11() {
         item.id === currentUnitId ? data[0] : item
       );
       setUnits(updatedUnits);
-      setFilteredUnits(updatedUnits);
       setShowEditModal(false);
       setEditDrug('');
       setEditAmount('');
@@ -122,20 +140,8 @@ function Unit11() {
       }
 
       setUnits(units.filter((item) => item.id !== id));
-      setFilteredUnits(filteredUnits.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Failed to delete unit:', error);
-    }
-  };
-
-  const handleSearch = () => {
-    if (searchTerm) {
-      const filtered = units.filter((unit) =>
-        unit.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUnits(filtered);
-    } else {
-      setFilteredUnits(units);
     }
   };
 
@@ -172,7 +178,7 @@ function Unit11() {
             </tr>
           </thead>
           <tbody>
-            {filteredUnits.map((item) => (
+            {units.map((item) => (
               <tr key={item.id} className="hover:bg-gray-100">
                 <td className="py-2 px-4 border">{item.name}</td>
                 <td className="py-2 px-4 border">{item.amount}</td>
@@ -275,17 +281,13 @@ function Unit11() {
         >
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Name</label>
-            <select
+            <input
+              type="text"
               value={editDrug}
               onChange={(e) => setEditDrug(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
-            >
-              <option value="">Select a drug</option>
-              {drugs.map((name, index) => (
-                <option key={index} value={name}>{name}</option>
-              ))}
-            </select>
+            />
           </div>
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Amount</label>
@@ -293,7 +295,7 @@ function Unit11() {
               type="number"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
             />
           </div>
@@ -307,9 +309,9 @@ function Unit11() {
             </button>
             <button
               type="submit"
-              className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+              className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
             >
-              Save
+              Save Changes
             </button>
           </div>
         </form>
