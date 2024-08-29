@@ -6,7 +6,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 Modal.setAppElement('#root');
 
-function Unit3() {
+function Unit5() {
   const [units, setUnits] = useState([]);
   const [drugs, setDrugs] = useState([]);
   const [selectedDrug, setSelectedDrug] = useState('');
@@ -30,7 +30,7 @@ function Unit3() {
   const getLatestUnits = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit3')
+        .from('unit5')
         .select('*')
         .order('id', { ascending: false })
         .limit(5);
@@ -48,7 +48,7 @@ function Unit3() {
   const handleSearch = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit3')
+        .from('unit5')
         .select('*')
         .ilike('name', `%${searchTerm}%`);
 
@@ -82,7 +82,7 @@ function Unit3() {
   const handleAddUnit = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit3')
+        .from('unit5')
         .insert([{ name: selectedDrug, amount }])
         .select('*');
 
@@ -106,7 +106,7 @@ function Unit3() {
   const handleEditUnit = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit3')
+        .from('unit5')
         .update({ name: editDrug, amount: editAmount })
         .eq('id', currentUnitId)
         .select('*');
@@ -131,7 +131,7 @@ function Unit3() {
   const handleDeleteUnit = async (id) => {
     try {
       const { error } = await supabase
-        .from('unit3')
+        .from('unit5')
         .delete()
         .eq('id', id);
 
@@ -149,7 +149,7 @@ function Unit3() {
     <div>
       <header className="bg-sky-900 text-white p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Unit 3 Management</h1>
+          <h1 className="text-xl font-semibold">Unit 5 Management</h1>
         </div>
       </header>
       <div className="container mx-auto mt-6 flex justify-between items-center">
@@ -320,5 +320,6 @@ function Unit3() {
   );
 }
 
-export default Unit3;
+export default Unit5;
+
 
