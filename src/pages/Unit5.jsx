@@ -6,9 +6,8 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 Modal.setAppElement('#root');
 
-function Unit5() {
+function Unit3() {
   const [units, setUnits] = useState([]);
-  const [filteredUnits, setFilteredUnits] = useState([]);
   const [drugs, setDrugs] = useState([]);
   const [selectedDrug, setSelectedDrug] = useState('');
   const [amount, setAmount] = useState('');
@@ -18,20 +17,20 @@ function Unit5() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentUnitId, setCurrentUnitId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    getUnits();
-    getDrugs();
-  }, []);
-
-  useEffect(() => {
-    handleSearch();
+    if (searchTerm) {
+      handleSearch();
+    } else {
+      getLatestUnits();
+    }
   }, [searchTerm]);
 
-  const getUnits = async () => {
+  const getLatestUnits = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit5') // Changed from 'unit3' to 'unit5'
+        .from('unit3')
         .select('*')
         .order('id', { ascending: false })
         .limit(5);
@@ -41,9 +40,26 @@ function Unit5() {
       }
 
       setUnits(data);
-      setFilteredUnits(data);
     } catch (error) {
       console.error('Failed to fetch units:', error);
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('unit3')
+        .select('*')
+        .ilike('name', `%${searchTerm}%`);
+
+      if (error) {
+        throw error;
+      }
+
+      setUnits(data);
+      setIsSearching(true);
+    } catch (error) {
+      console.error('Failed to search units:', error);
     }
   };
 
@@ -66,7 +82,7 @@ function Unit5() {
   const handleAddUnit = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit5') // Changed from 'unit3' to 'unit5'
+        .from('unit3')
         .insert([{ name: selectedDrug, amount }])
         .select('*');
 
@@ -74,8 +90,11 @@ function Unit5() {
         throw error;
       }
 
-      setUnits([data[0], ...units]);
-      setFilteredUnits([data[0], ...filteredUnits]);
+      if (!isSearching) {
+        setUnits([data[0], ...units.slice(0, 4)]); // Keep only the latest 5 units
+      } else {
+        setUnits([data[0], ...units]);
+      }
       setShowAddModal(false);
       setSelectedDrug('');
       setAmount('');
@@ -87,7 +106,7 @@ function Unit5() {
   const handleEditUnit = async () => {
     try {
       const { data, error } = await supabase
-        .from('unit5') // Changed from 'unit3' to 'unit5'
+        .from('unit3')
         .update({ name: editDrug, amount: editAmount })
         .eq('id', currentUnitId)
         .select('*');
@@ -100,7 +119,6 @@ function Unit5() {
         item.id === currentUnitId ? data[0] : item
       );
       setUnits(updatedUnits);
-      setFilteredUnits(updatedUnits);
       setShowEditModal(false);
       setEditDrug('');
       setEditAmount('');
@@ -113,7 +131,7 @@ function Unit5() {
   const handleDeleteUnit = async (id) => {
     try {
       const { error } = await supabase
-        .from('unit5') // Changed from 'unit3' to 'unit5'
+        .from('unit3')
         .delete()
         .eq('id', id);
 
@@ -122,20 +140,8 @@ function Unit5() {
       }
 
       setUnits(units.filter((item) => item.id !== id));
-      setFilteredUnits(filteredUnits.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Failed to delete unit:', error);
-    }
-  };
-
-  const handleSearch = () => {
-    if (searchTerm) {
-      const filtered = units.filter((unit) =>
-        unit.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUnits(filtered);
-    } else {
-      setFilteredUnits(units);
     }
   };
 
@@ -143,7 +149,7 @@ function Unit5() {
     <div>
       <header className="bg-sky-900 text-white p-4 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-semibold">Unit 5 Management</h1>
+          <h1 className="text-xl font-semibold">Unit 3 Management</h1>
         </div>
       </header>
       <div className="container mx-auto mt-6 flex justify-between items-center">
@@ -172,7 +178,7 @@ function Unit5() {
             </tr>
           </thead>
           <tbody>
-            {filteredUnits.map((item) => (
+            {units.map((item) => (
               <tr key={item.id} className="hover:bg-gray-100">
                 <td className="py-2 px-4 border">{item.name}</td>
                 <td className="py-2 px-4 border">{item.amount}</td>
@@ -275,17 +281,13 @@ function Unit5() {
         >
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Name</label>
-            <select
+            <input
+              type="text"
               value={editDrug}
               onChange={(e) => setEditDrug(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
-            >
-              <option value="">Select a drug</option>
-              {drugs.map((name, index) => (
-                <option key={index} value={name}>{name}</option>
-              ))}
-            </select>
+            />
           </div>
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Amount</label>
@@ -293,7 +295,7 @@ function Unit5() {
               type="number"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
             />
           </div>
@@ -307,9 +309,9 @@ function Unit5() {
             </button>
             <button
               type="submit"
-              className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+              className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
             >
-              Save
+              Save Changes
             </button>
           </div>
         </form>
@@ -318,4 +320,5 @@ function Unit5() {
   );
 }
 
-export default Unit5;
+export default Unit3;
+
