@@ -20,6 +20,10 @@ function Unit7() {
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
+    getDrugs(); // Fetch the list of drugs when the component mounts
+  }, []);
+
+  useEffect(() => {
     if (searchTerm) {
       handleSearch();
     } else {
@@ -169,6 +173,22 @@ function Unit7() {
         </button>
       </div>
       <main className="container mx-auto p-6">
+        <h2 className="text-xl font-semibold mb-4">List of Drugs</h2>
+        <table className="min-w-full border border-sky-900 my-4">
+          <thead>
+            <tr className="bg-sky-900 text-white">
+              <th className="py-2 px-4 border">Drug Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {drugs.map((drug, index) => (
+              <tr key={index} className="hover:bg-gray-100">
+                <td className="py-2 px-4 border">{drug}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <h2 className="text-xl font-semibold mt-10 mb-4">Latest Units</h2>
         <table className="min-w-full border border-sky-900 my-4">
           <thead>
             <tr className="bg-sky-900 text-white">
@@ -230,9 +250,11 @@ function Unit7() {
               className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             >
-              <option value="">Select a drug</option>
-              {drugs.map((name, index) => (
-                <option key={index} value={name}>{name}</option>
+              <option value="">Select a Drug</option>
+              {drugs.map((drug, index) => (
+                <option key={index} value={drug}>
+                  {drug}
+                </option>
               ))}
             </select>
           </div>
@@ -249,8 +271,8 @@ function Unit7() {
           <div className="flex justify-end">
             <button
               type="button"
+              className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md mr-4"
               onClick={() => setShowAddModal(false)}
-              className="bg-red-500 text-white py-2 px-4 rounded-md mr-2 hover:bg-red-600"
             >
               Cancel
             </button>
@@ -258,7 +280,7 @@ function Unit7() {
               type="submit"
               className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
             >
-              Add Unit
+              Add
             </button>
           </div>
         </form>
@@ -281,13 +303,19 @@ function Unit7() {
         >
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Name</label>
-            <input
-              type="text"
+            <select
               value={editDrug}
               onChange={(e) => setEditDrug(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
-            />
+            >
+              <option value="">Select a Drug</option>
+              {drugs.map((drug, index) => (
+                <option key={index} value={drug}>
+                  {drug}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Amount</label>
@@ -302,8 +330,8 @@ function Unit7() {
           <div className="flex justify-end">
             <button
               type="button"
+              className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md mr-4"
               onClick={() => setShowEditModal(false)}
-              className="bg-red-500 text-white py-2 px-4 rounded-md mr-2 hover:bg-red-600"
             >
               Cancel
             </button>
@@ -311,7 +339,7 @@ function Unit7() {
               type="submit"
               className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
             >
-              Save Changes
+              Save
             </button>
           </div>
         </form>
