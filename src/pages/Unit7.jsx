@@ -17,15 +17,11 @@ function Unit7() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentUnitId, setCurrentUnitId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  useEffect(() => {
-    getDrugs(); // Fetch the list of drugs
-    getLatestUnits(); // Fetch the latest 5 units
-  }, []);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     if (searchTerm) {
-      filterUnits();
+      handleSearch();
     } else {
       getLatestUnits();
     }
@@ -49,24 +45,21 @@ function Unit7() {
     }
   };
 
-  const filterUnits = async () => {
+  const handleSearch = async () => {
     try {
       const { data, error } = await supabase
         .from('unit7')
         .select('*')
-        .order('id', { ascending: false })
-        .limit(5);
+        .ilike('name', `%${searchTerm}%`);
 
       if (error) {
         throw error;
       }
 
-      const filteredUnits = data.filter(unit =>
-        unit.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setUnits(filteredUnits);
+      setUnits(data);
+      setIsSearching(true);
     } catch (error) {
-      console.error('Failed to filter units:', error);
+      console.error('Failed to search units:', error);
     }
   };
 
@@ -101,8 +94,11 @@ function Unit7() {
         throw error;
       }
 
-      // Update the list to include the new unit and maintain only the latest 5
-      setUnits(prevUnits => [data[0], ...prevUnits.slice(0, 4)]);
+      if (!isSearching) {
+        setUnits([data[0], ...units.slice(0, 4)]); // Keep only the latest 5 units
+      } else {
+        setUnits([data[0], ...units]);
+      }
       setShowAddModal(false);
       setSelectedDrug('');
       setAmount('');
@@ -147,7 +143,6 @@ function Unit7() {
         throw error;
       }
 
-      // Update the list after deletion to maintain only the latest 5
       setUnits(units.filter((item) => item.id !== id));
     } catch (error) {
       console.error('Failed to delete unit:', error);
@@ -178,7 +173,6 @@ function Unit7() {
         </button>
       </div>
       <main className="container mx-auto p-6">
-        <h2 className="text-xl font-semibold mt-10 mb-4">Latest Units</h2>
         <table className="min-w-full border border-sky-900 my-4">
           <thead>
             <tr className="bg-sky-900 text-white">
@@ -240,9 +234,9 @@ function Unit7() {
               className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             >
-              <option value="">Select a Drug</option>
-              {drugs.map(drug => (
-                <option key={drug} value={drug}>{drug}</option>
+              <option value="">Select a drug</option>
+              {drugs.map((name, index) => (
+                <option key={index} value={name}>{name}</option>
               ))}
             </select>
           </div>
@@ -256,12 +250,21 @@ function Unit7() {
               required
             />
           </div>
-          <button
-            type="submit"
-            className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
-          >
-            Add Unit
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowAddModal(false)}
+              className="bg-red-500 text-white py-2 px-4 rounded-md mr-2 hover:bg-red-600"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+            >
+              Add Unit
+            </button>
+          </div>
         </form>
       </Modal>
 
@@ -282,16 +285,13 @@ function Unit7() {
         >
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Name</label>
-            <select
+            <input
+              type="text"
               value={editDrug}
               onChange={(e) => setEditDrug(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
-            >
-              {drugs.map(drug => (
-                <option key={drug} value={drug}>{drug}</option>
-              ))}
-            </select>
+            />
           </div>
           <div className="mb-5">
             <label className="block text-gray-700 text-sm font-medium mb-2">Amount</label>
@@ -299,16 +299,25 @@ function Unit7() {
               type="number"
               value={editAmount}
               onChange={(e) => setEditAmount(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
               required
             />
           </div>
-          <button
-            type="submit"
-            className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
-          >
-            Save Changes
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowEditModal(false)}
+              className="bg-red-500 text-white py-2 px-4 rounded-md mr-2 hover:bg-red-600"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
+            >
+              Save Changes
+            </button>
+          </div>
         </form>
       </Modal>
     </div>
