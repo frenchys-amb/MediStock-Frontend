@@ -79,6 +79,10 @@ function Unit2() {
     }
   };
 
+  useEffect(() => {
+  getDrugs();
+}, []);
+
   const handleAddUnit = async () => {
     try {
       const { data, error } = await supabase
