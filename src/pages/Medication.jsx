@@ -27,8 +27,8 @@ function Medication() {
   }, []);
 
   useEffect(() => {
-    handleSearch(); // Trigger the search whenever the search term changes
-  }, [searchTerm, medications]);
+    handleSearch(); // Llama a handleSearch cuando cambia el término de búsqueda
+  }, [searchTerm]);
 
   const getMedications = async () => {
     try {
@@ -65,21 +65,25 @@ function Medication() {
     }
   };
 
-  const handleSearch = () => {
-    if (searchTerm.trim() === '') {
-      setFilteredMedications(medications);
-    } else {
-      const lowercasedFilter = searchTerm.toLowerCase();
-      const filteredData = medications.filter(item => 
-        item.name.toLowerCase().includes(lowercasedFilter) || 
-        item.dose.toLowerCase().includes(lowercasedFilter)
-      );
-      setFilteredMedications(filteredData);
+  const handleSearch = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('medication')
+        .select('*')
+        .ilike('name', `%${searchTerm}%`);
+
+      if (error) {
+        throw error;
+      }
+
+      setFilteredMedications(data); // Actualiza el estado filteredMedications
+    } catch (error) {
+      console.error('Failed to search units:', error);
     }
   };
 
-  const handleAddMedication = async () => {
-    try {
+    const handleAddMedication = async () => {
+     try {
       const { data, error } = await supabase
         .from('medication')
         .insert([{ name: medicationName, dose, amount }])
