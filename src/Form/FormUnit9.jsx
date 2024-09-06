@@ -100,7 +100,7 @@ const FormUnit9 = () => {
         }
       }
 
-      // Actualizar la cantidad en la tabla unit6
+      // Actualizar la cantidad en la tabla unit9
       const { error: updateUnitError } = await supabase
         .from('unit9')
         .update({ amount: medicationAmount - amount })
@@ -110,10 +110,17 @@ const FormUnit9 = () => {
         throw updateUnitError;
       }
 
-      // Opcional: Puedes redirigir o mostrar un mensaje de éxito en lugar de recargar
-      window.location.reload();
+      // Limpiar el formulario
+      setName('');
+      setLicense('');
+      setMedication('');
+      setAmount('');
+      setMedicationAmount(0);
+
+      alert('Datos guardados correctamente');
     } catch (error) {
       console.error('Error submitting the form:', error);
+      alert('Ocurrió un error al enviar el formulario. Por favor, inténtelo de nuevo.');
     }
   };
 
