@@ -100,7 +100,7 @@ const FormUnit9 = () => {
         }
       }
 
-      // Actualizar la cantidad en la tabla unit6
+      // Actualizar la cantidad en la tabla unit9
       const { error: updateUnitError } = await supabase
         .from('unit9')
         .update({ amount: medicationAmount - amount })
