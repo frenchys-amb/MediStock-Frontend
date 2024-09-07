@@ -9,24 +9,24 @@ const FormUnit7 = () => {
   const [drugs, setDrugs] = useState([]);
   const [medicationAmount, setMedicationAmount] = useState(0);
 
-  useEffect(() => {
-    const fetchDrugs = async () => {
-      try {
-        const { data, error } = await supabase.from('drug').select('*');
-
-        if (error) {
-          throw error;
-        }
-
-        setDrugs(data);
-      } catch (error) {
-        console.error('Error fetching drugs:', error);
+  // Fetch drugs list
+  const fetchDrugs = async () => {
+    try {
+      const { data, error } = await supabase.from('drug').select('*');
+      if (error) {
+        throw error;
       }
-    };
+      setDrugs(data);
+    } catch (error) {
+      console.error('Error fetching drugs:', error);
+    }
+  };
 
+  useEffect(() => {
     fetchDrugs();
   }, []);
 
+  // Fetch medication amount based on selected medication
   useEffect(() => {
     const fetchMedicationAmount = async () => {
       if (medication) {
@@ -40,7 +40,6 @@ const FormUnit7 = () => {
           if (error) {
             throw error;
           }
-
           setMedicationAmount(data ? data.amount : 0);
         } catch (error) {
           console.error('Error fetching medication amount:', error);
@@ -49,10 +48,10 @@ const FormUnit7 = () => {
         setMedicationAmount(0);
       }
     };
-
     fetchMedicationAmount();
   }, [medication]);
 
+  // Handle form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -69,38 +68,22 @@ const FormUnit7 = () => {
     };
 
     try {
-      const { data: existingRecord, error: selectError } = await supabase
+      // Attempt to insert the new record
+      const { error: insertError } = await supabase
         .from('formunit7')
-        .select('*')
-        .eq('name', name)
-        .single();
+        .insert([data]);
 
-      if (selectError && selectError.code !== 'PGRST116') {
-        throw selectError;
-      }
-
-      if (existingRecord) {
-        // Si el registro ya existe, actualízalo
-        const { error: updateError } = await supabase
-          .from('formunit7')
-          .update(data)
-          .eq('name', name);
-
-        if (updateError) {
-          throw updateError;
-        }
-      } else {
-        // Si no existe, inserta un nuevo registro
-        const { error: insertError } = await supabase
-          .from('formunit7')
-          .insert([data]);
-
-        if (insertError) {
+      if (insertError) {
+        // Handle the unique constraint error
+        if (insertError.code === '23505') {
+          console.warn('Duplicate entry, but continuing to handle it.');
+          // You can choose to ignore or handle this case as needed
+        } else {
           throw insertError;
         }
       }
 
-      // Actualizar la cantidad en la tabla unit6
+      // Update the amount in the unit9 table
       const { error: updateUnitError } = await supabase
         .from('unit7')
         .update({ amount: medicationAmount - amount })
@@ -110,10 +93,21 @@ const FormUnit7 = () => {
         throw updateUnitError;
       }
 
-      // Opcional: Puedes redirigir o mostrar un mensaje de éxito en lugar de recargar
-      window.location.reload();
+      alert('Datos guardados correctamente');
+
+      // Clear form fields and refresh data
+      setName('');
+      setLicense('');
+      setMedication('');
+      setAmount('');
+      setMedicationAmount(0);
+      
+      // Refresh the drug list
+      await fetchDrugs();
+
     } catch (error) {
       console.error('Error submitting the form:', error);
+      alert('Ocurrió un error al enviar el formulario. Por favor, inténtelo de nuevo.');
     }
   };
 
